@@ -20,9 +20,13 @@ cell_style_green = {
     'backgroundColor': '#b3bfb3'
 }
 
-centered_table_style = {
-    'display': 'flex',
-    'justify-content': 'center',
-    'align-items': 'center',
-    'height': '100vh'
+cell_style_yellow = {
+    'border': '1px solid black',
+    'padding': '8px',
+    'backgroundColor': '#ffd86e'
 }
+
+top_or_bottom_options = [
+    {'label': 'top', 'value': 'top'},
+    {'label': 'bottom', 'value': 'bottom'}
+]

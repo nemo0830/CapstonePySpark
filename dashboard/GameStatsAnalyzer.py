@@ -1,8 +1,8 @@
 import os
-import random
 import dash
 import dash_bootstrap_components as dbc
-from dash import html
+from dash import html, dcc
+from api import Callbacks
 from config.AppProperties import *
 from pyspark.sql import SparkSession
 from config.SparkConn import jdbcUrl, connectionProperties
@@ -15,23 +15,39 @@ spark = SparkSession.builder \
     .config("spark.jars", "../postgresql-42.6.0.jar") \
     .master("local").getOrCreate()
 
+# Prepare game data
 df = spark.read.jdbc(url=jdbcUrl, table="game_data", properties=connectionProperties)
-df_win = WinRateTransformer().read_table_and_transform(df)
-df_matrix = WinRateTransformer().process_matrix(df_win)
-header = [""] + WinRateTransformer().columns
+transformer = WinRateTransformer()
+df_matrix = transformer.process_matrix(transformer.read_table_and_transform(df))
+df_win_rate = transformer.calculate_win_rate_and_assign_tiers(df_matrix)
+header = [""] + transformer.columns
 
+# Register callbacks
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+Callbacks.register_callbacks(app, df_win_rate)
 
 app.layout = html.Div([
-
     html.H1("Dashboard on RIC Game Stats", style={'marginBottom': '20px'}),
-    html.H2("Win Loss Table"),
-
+    html.H2("Team Performance Browser"),
+    html.Div([
+        html.Label('Top Or Bottom'),
+        dcc.Dropdown(id='top_or_bottom', options=top_or_bottom_options, value='top', style={'width': '40%'}),
+    ], style={'display': 'flex', 'flexDirection': 'row'}),
+    html.Div([
+        html.Label('Query num teams:'),
+        dcc.Input(id='input-param', type='number', value=0),
+        html.Button('Submit', id='submit-button', n_clicks=0)
+    ]),
+    html.Div([
+        dcc.Graph(id='team-score-plot')
+    ]),
+    html.H2("Win Loss Table (left Host, top Oppo)"),
     html.Div(
-        # style=centered_table_style,
         children=[
             html.Table(
-                [html.Tr([html.Td(num, style=cell_style_red if num == 0 else cell_style_green) for num in df_matrix[i]]) for i in range(len(df_matrix))],
+                [html.Tr([html.Td(team, style=cell_style) for team in header])] +
+                [html.Tr([html.Td(team_name, style=cell_style)] +
+                         [html.Td(num, style=cell_style_red if num == 0 else cell_style_green) if i != j else html.Td("-", style=cell_style_yellow) for j, num in enumerate(row)]) for i, (row, team_name) in enumerate(zip(df_matrix, transformer.columns))],
                 style=table_style
             )
         ]
