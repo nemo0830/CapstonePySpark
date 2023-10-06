@@ -1,5 +1,7 @@
 from dash.dependencies import Input, Output, State
 import plotly.express as px
+import dash
+from tools.Tools import random_assign_team_based_on_tier
 
 def register_callbacks(app, win_rate_data):
 
@@ -20,3 +22,14 @@ def register_callbacks(app, win_rate_data):
                      title=top_or_bottom + " " + str(input_param) + " teams and their win rates") \
             .update_layout(title_font_size=30)
         return fig
+
+    @app.callback(
+        dash.dependencies.Output('table', 'data'),
+        dash.dependencies.Input('submit-button-alloc', 'n_clicks')
+    )
+    def update_table(n_clicks, df=win_rate_data):
+        if n_clicks is None:
+            return dash.no_update
+        matrix = random_assign_team_based_on_tier(df)
+        data = [{'col_{0}'.format(j): matrix[i][j] for j in range(5)} for i in range(len(matrix))]
+        return data

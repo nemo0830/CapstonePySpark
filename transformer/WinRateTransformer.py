@@ -42,5 +42,4 @@ class WinRateTransformer:
                 team_size -= 1
             tier_list.append("tier" + str(self.tier_num + 1 - team_size))
         modified_list = [combined_matrix[idx] + tuple([tier_list[idx]]) for idx in range(len(combined_matrix))]
-        print(modified_list)
         return pd.DataFrame(modified_list, columns=self.schema)

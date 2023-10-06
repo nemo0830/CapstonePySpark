@@ -1,6 +1,7 @@
 import os
 import dash
 import dash_bootstrap_components as dbc
+from dash import dash_table
 from dash import html, dcc
 from api import Callbacks
 from config.AppProperties import *
@@ -51,7 +52,15 @@ app.layout = html.Div([
                 style=table_style
             )
         ]
-    )
+    ),
+    html.H2("Team Random Allocation (based on tiers)"),
+    html.Button("Generate", id="submit-button-alloc", n_clicks=0),
+    # Table to display the random numbers
+    dash_table.DataTable(
+        id='table',
+        columns=[{'name': tier_list[i], 'id': f'col_{i}'} for i in range(len(tier_list))],
+        data=[],
+    ),
 ])
 
 if __name__ == "__main__":

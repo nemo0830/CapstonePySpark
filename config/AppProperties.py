@@ -30,3 +30,5 @@ top_or_bottom_options = [
     {'label': 'top', 'value': 'top'},
     {'label': 'bottom', 'value': 'bottom'}
 ]
+
+tier_list = ["", "tier1", "tier2", "tier3", "tier4"]
