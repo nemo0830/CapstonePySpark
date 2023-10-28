@@ -17,7 +17,7 @@ spark = SparkSession.builder \
     .master("local").getOrCreate()
 
 # Prepare game data
-df = spark.read.jdbc(url=jdbcUrl, table="game_data", properties=connectionProperties)
+df = spark.read.jdbc(url=jdbcUrl, table="game_data_big", properties=connectionProperties)
 transformer = WinRateTransformer()
 df_matrix = transformer.process_matrix(transformer.read_table_and_transform(df))
 df_win_rate = transformer.calculate_win_rate_and_assign_tiers(df_matrix)
